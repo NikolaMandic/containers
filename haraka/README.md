@@ -7,4 +7,4 @@ then
 `startContainer.sh`     
 then `startHaraka`     
 then config ThunderBird to connect to port 2555 on the container :-D       
-Over ssh tunnel :-D     
+you could also ssh tunnel to the port :-D     

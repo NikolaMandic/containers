@@ -1,3 +1,5 @@
+chmod +x /root/start/bootstrap.sh
+chmod +x /root/start/run.sh
 if mkdir /var/lock/mylock; then
   echo "Locking succeeded" >&2
   /root/start/bootstrap.sh

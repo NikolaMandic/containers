@@ -4,7 +4,7 @@ startHaraka is the alias used to start haraka
 first in haraka dir do       
 `docker build -t haraka .`        
 then     
-`startContainer.sh`     
+`startContainer.sh myhostname.com`     
 then `startHaraka`     
 then config ThunderBird to connect to port 2555 on the container :-D       
 you could also ssh tunnel to the port :-D     

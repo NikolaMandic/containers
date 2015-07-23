@@ -5,5 +5,5 @@ first in haraka dir do
 `docker build -t haraka .`        
 then     
 `startContainer.sh`     
-then startHaraka     
-
+then `startHaraka`     
+then config ThunderBird to connect to port 2555 on the container :-D

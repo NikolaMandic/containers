@@ -6,4 +6,5 @@ first in haraka dir do
 then     
 `startContainer.sh`     
 then `startHaraka`     
-then config ThunderBird to connect to port 2555 on the container :-D
+then config ThunderBird to connect to port 2555 on the container :-D       
+Over ssh tunnel :-D     

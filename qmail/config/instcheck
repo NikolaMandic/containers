@@ -1,0 +1,158 @@
+#!/bin/sh
+
+# Dave Sill, 2003-11-10
+# http://lifewithqmail.org/inst_check
+
+# set to n if you're not running a pop3 server, y if you are
+CHECKPOP=n
+
+QMHOME=/var/qmail
+LBIN=/usr/local/bin
+
+OK=1
+
+if [ $# -eq 1 ]; then
+  if [ "$1" = "-v" ]; then
+    VERB=y
+  else
+    VERB=n
+  fi
+fi
+
+if [ ! -d $QMHOME ]; then
+  echo "! Couldn't find qmail's home directory, $QMHOME!"
+else
+  if [ "$VERB" = y ]; then
+    echo "$QMHOME exists"
+  fi
+  for i in alias bin boot control doc man queue supervise users; do
+    if [ ! -d $QMHOME/$i ]; then
+      echo "! Couldn't find $QMHOME/$i!"
+      OK=0
+    elif [ "$VERB" = y ]; then
+      echo "$QMHOME/$i exists"
+    fi
+  done
+
+  if [ ! -f $QMHOME/rc ]; then
+    echo "! $QMHOME/rc is missing"
+    OK=0
+  elif [ ! -x $QMHOME/rc ]; then
+    echo "! $QMHOME/rc is not executable"
+    echo "...try: chmod 755 $QMHOME/rc"
+    OK=0
+  elif [ `head -1 $QMHOME/rc|cat -vet` != '#!/bin/sh$' ]; then
+    echo "! $QMHOME/rc has bad magic cookie"
+    echo "...try: dos2unix $QMHOME/rc"
+    OK=0
+  elif [ "$VERB" = y ]; then
+    echo "$QMHOME/rc is executable and has a valid magic cookie"
+  fi
+fi
+
+for i in alias qmaild qmaill qmailp qmailq qmailr qmails; do
+  grep "^$i:" /etc/passwd >/dev/null
+  if [ $? -ne 0 ]; then
+    echo "! Couldn't find $i user in /etc/passwd"
+    OK=0
+  elif [ "$VERB" = y ]; then
+    echo "$i user exists"
+  fi
+done
+
+for i in qmail nofiles; do
+  grep "^$i:" /etc/group >/dev/null
+  if [ $? -ne 0 ]; then
+    echo "! Couldn't find $i group in /etc/group"
+    OK=0
+  elif [ "$VERB" = y ]; then
+    echo "$i group exists"
+  fi
+done
+
+for i in tcprules tcpserver; do
+  if [ ! -x $LBIN/$i ]; then
+    echo "! Couldn't find $LBIN/$i from ucspi-tcp"
+    OK=0
+  elif [ "$VERB" = y ]; then
+    echo "$i from ucspi-tcp is installed"
+  fi
+done
+
+for i in multilog softlimit setuidgid supervise svok svscan tai64nlocal; do
+  if [ ! -x $LBIN/$i ]; then
+    echo "! Couldn't find $LBIN/$i from daemontools"
+    OK=0
+  elif [ "$VERB" = y ]; then
+    echo "$i from daemontools is installed"
+fi
+done
+
+if [ ! -d /service ]; then
+  echo "! /service directory is missing"
+  OK=0
+elif [ "$VERB" = y ]; then
+  echo "/service directory exists"
+fi
+
+if [ -f /etc/inittab ]; then
+  grep "^SV" /etc/inittab >/dev/null
+  if [ $? -ne 0 ]; then
+    echo "! Couldn't find SV entry in inittab"
+    OK=0
+  elif [ "$VERB" = y ]; then
+    echo "svscan /service is configured to run via /etc/inittab"
+  fi
+  PS="ps -ef"
+else
+  grep "svscanboot" /etc/rc.local >/dev/null
+  if [ $? -ne 0 ]; then
+    echo "! Couldn't find 'csh -cf '/command/svscanboot &' in /etc/rc.local"
+    OK=0
+  elif [ "$VERB" = y ]; then
+    echo "/command/svscanboot is configured to run via /etc/rc.local"
+  fi
+  PS="ps -waux"
+fi
+
+SVRUN=`$PS | grep "svscan /service" | grep -v grep`
+if [ -z "$SVRUN" ]; then
+  echo "'! svscan /service' doesn't seem to be running"
+  OK=0
+elif [ "$VERB" = y ]; then
+  echo "svscan /service is running"
+fi
+
+if [ ! -f $QMHOME/control/defaultdelivery ]; then
+  echo "! Couldn't find $QMHOME/control/defaultdelivery"
+  OK=0
+elif [ ! -s $QMHOME/control/defaultdelivery ]; then
+  echo "! $QMHOME/control/defaultdelivery is empty"
+  OK=0
+elif [ "$VERB" = y ]; then
+  echo "$QMHOME/control/defaultdelivery looks OK"
+fi
+
+if [ ! -f $QMHOME/bin/qmailctl ]; then
+  echo "! $QMHOME/bin/qmailctl is missing"
+  OK=0
+elif [ ! -s $QMHOME/bin/qmailctl ]; then
+  echo "! $QMHOME/bin/qmailctl is empty"
+  OK=0
+elif [ `head -1 $QMHOME/bin/qmailctl|cat -vet` != '#!/bin/sh$' ]; then
+    echo "! $QMHOME/bin/qmailctl has bad magic cookie"
+    echo "...try: dos2unix $QMHOME/bin/qmailctl"
+    OK=0
+elif [ ! -x $QMHOME/bin/qmailctl ]; then
+  echo "! $QMHOME/bin/qmailctl is not executable"
+  echo "...try: chmod 755 $QMHOME/bin/qmailctl"
+  OK=0
+elif [ "$VERB" = y ]; then
+  echo "$QMHOME/bin/qmailctl looks OK"
+fi
+if [ ! -L /usr/bin/qmailctl ]; then
+  echo "! /usr/bin/qmailctl is missing"
+  echo "...try: ln -s $QMHOME/bin/qmailctl /usr/bin"
+  OK=0
+elif [ "$VERB" = y ]; then
+  echo "/usr/bin/

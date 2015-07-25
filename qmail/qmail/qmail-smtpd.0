@@ -1,0 +1,102 @@
+qmail-smtpd(8)              System Manager's Manual             qmail-smtpd(8)
+
+
+
+NNAAMMEE
+       qmail-smtpd - receive mail via SMTP
+
+SSYYNNOOPPSSIISS
+       qqmmaaiill--ssmmttppdd
+
+DDEESSCCRRIIPPTTIIOONN
+       qqmmaaiill--ssmmttppdd  receives mail messages via the Simple Mail Transfer Proto‐
+       col (SMTP) and invokes qqmmaaiill--qquueeuuee to deposit them  into  the  outgoing
+       queue.  qqmmaaiill--ssmmttppdd must be supplied several environment variables; see
+       ttccpp--eennvviirroonn((55)).
+
+       qqmmaaiill--ssmmttppdd is responsible for counting hops.  It rejects  any  message
+       with 100 or more RReecceeiivveedd or DDeelliivveerreedd--TToo header fields.
+
+       qqmmaaiill--ssmmttppdd  supports  ESMTP,  including  the  8BITMIME  and PIPELINING
+       options.
+
+TTRRAANNSSPPAARREENNCCYY
+       qqmmaaiill--ssmmttppdd converts the SMTP newline convention into the UNIX  newline
+       convention  by  converting CR LF into LF.  It returns a temporary error
+       and     drops     the     connection     on     bare      LFs;      see
+       hhttttpp::////ppoobbooxx..ccoomm//~~ddjjbb//ddooccss//ssmmttppllff..hhttmmll.
+
+       qqmmaaiill--ssmmttppdd accepts messages that contain long lines or non-ASCII char‐
+       acters, even though such messages violate the SMTP protocol.
+
+CCOONNTTRROOLL FFIILLEESS
+       _b_a_d_m_a_i_l_f_r_o_m
+            Unacceptable envelope sender addresses.  qqmmaaiill--ssmmttppdd  will  reject
+            every  recipient  address  for  a  message  if the envelope sender
+            address is listed in _b_a_d_m_a_i_l_f_r_o_m.  A line in _b_a_d_m_a_i_l_f_r_o_m may be of
+            the form @@_h_o_s_t, meaning every address at _h_o_s_t.
+
+       _d_a_t_a_b_y_t_e_s
+            Maximum  number  of bytes allowed in a message, or 0 for no limit.
+            Default: 0.  If a message exceeds this limit, qqmmaaiill--ssmmttppdd  returns
+            a  permanent error code to the client; in contrast, if the disk is
+            full or qqmmaaiill--ssmmttppdd hits a resource limit, qqmmaaiill--ssmmttppdd  returns  a
+            temporary error code.
+
+            _d_a_t_a_b_y_t_e_s  counts  bytes  as  stored  on  disk, not as transmitted
+            through the network.  It does not count the  qqmmaaiill--ssmmttppdd  Received
+            line, the qqmmaaiill--qquueeuuee Received line, or the envelope.
+
+            If  the  environment  variable  DDAATTAABBYYTTEESS  is  set,  it  overrides
+            _d_a_t_a_b_y_t_e_s.
+
+       _l_o_c_a_l_i_p_h_o_s_t
+            Replacement host name for local IP  addresses.   Default:  _m_e,  if
+            that is supplied.  qqmmaaiill--ssmmttppdd is responsible for recognizing dot‐
+            ted-decimal addresses for the current host.  When it sees a recip‐
+            ient  address  of the form _b_o_x_@_[_d_._d_._d_._d_], where _d_._d_._d_._d is a local
+            IP address, it replaces _[_d_._d_._d_._d_] with _l_o_c_a_l_i_p_h_o_s_t.  This is  done
+            before _r_c_p_t_h_o_s_t_s.
+
+       _m_o_r_e_r_c_p_t_h_o_s_t_s
+            Extra  allowed  RCPT domains.  If _r_c_p_t_h_o_s_t_s and _m_o_r_e_r_c_p_t_h_o_s_t_s both
+            exist, _m_o_r_e_r_c_p_t_h_o_s_t_s is effectively appended to _r_c_p_t_h_o_s_t_s.
+
+            You must run qqmmaaiill--nneewwmmrrhh whenever _m_o_r_e_r_c_p_t_h_o_s_t_s changes.
+
+            Rule of thumb for large sites: Put  your  50  most  commonly  used
+            domains into _r_c_p_t_h_o_s_t_s, and the rest into _m_o_r_e_r_c_p_t_h_o_s_t_s.
+
+       _r_c_p_t_h_o_s_t_s
+            Allowed  RCPT domains.  If _r_c_p_t_h_o_s_t_s is supplied, qqmmaaiill--ssmmttppdd will
+            reject any envelope recipient address with a domain not listed  in
+            _r_c_p_t_h_o_s_t_s.
+
+            Exception:  If the environment variable RREELLAAYYCCLLIIEENNTT is set, qqmmaaiill--
+            ssmmttppdd will ignore _r_c_p_t_h_o_s_t_s, and will append the value  of  RREELLAAYY‐‐
+            CCLLIIEENNTT to each incoming recipient address.
+
+            _r_c_p_t_h_o_s_t_s may include wildcards:
+
+               heaven.af.mil
+               .heaven.af.mil
+
+            Envelope  recipient  addresses  without @ signs are always allowed
+            through.
+
+       _s_m_t_p_g_r_e_e_t_i_n_g
+            SMTP greeting message.  Default: _m_e, if that is  supplied;  other‐
+            wise qqmmaaiill--ssmmttppdd will refuse to run.  The first word of _s_m_t_p_g_r_e_e_t_‐
+            _i_n_g should be the current host's name.
+
+       _t_i_m_e_o_u_t_s_m_t_p_d
+            Number of seconds qqmmaaiill--ssmmttppdd will wait for  each  new  buffer  of
+            data from the remote SMTP client.  Default: 1200.
+
+SSEEEE AALLSSOO
+       tcp-env(1),  tcp-environ(5),  qmail-control(5), qmail-inject(8), qmail-
+       newmrh(8), qmail-queue(8), qmail-remote(8)
+
+
+
+                                                                qmail-smtpd(8)

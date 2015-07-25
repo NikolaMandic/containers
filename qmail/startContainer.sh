@@ -1,1 +1,1 @@
-docker run -v `pwd`/start:/root/start -p 2555:25  --hostname="$1" -it haraka bash
+docker run -v `pwd`/qmail:/root/qmail -v `pwd`/start:/root/start -p 110:110 -p 995:995  --hostname="test.nikola.link" -e "USERR=user" -it qmail bash

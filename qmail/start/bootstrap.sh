@@ -2,15 +2,17 @@ openssl req     -new     -newkey rsa:8192     -days 365     -nodes     -x509    
 sed -i '1s/.*/gcc -O2 -include \/usr\/include\/errno.h/g' /root/qmail/conf-cc
 sed -i '1s/.*/gcc -O2 -include \/usr\/include\/errno.h/g' /root/ucspi/conf-cc
 sed -i '1s/.*/gcc -O2 -include \/usr\/include\/errno.h/g' /root/admin/daemontools-0.76/src/conf-cc
-useradd alias
-useradd qmaild
-useradd qmaill
-useradd qmailq
-useradd qmailr
-useradd qmailp
-useradd qmails
+
 groupadd nofiles
+useradd -g nofiles -d /var/qmail/alias alias
+useradd -g nofiles -d /var/qmail qmaild
+useradd -g nofiles -d /var/qmail qmaill
+useradd -g nofiles -d /var/qmail qmailp
 groupadd qmail
+useradd -g qmail -d /var/qmail qmailq
+useradd -g qmail -d /var/qmail qmailr
+useradd -g qmail -d /var/qmail qmails
+
 mkdir /var/qmail
 cd /root/qmail
 make setup check
@@ -48,3 +50,13 @@ chmod 755 /var/qmail/supervise/qmail-smtpd/log/run
 mkdir -p /var/log/qmail/smtpd
 chown qmaill /var/log/qmail /var/log/qmail/smtpd
 ln -s /var/qmail/supervise/qmail-send /var/qmail/supervise/qmail-smtpd /service
+
+echo '127.:allow,RELAYCLIENT=""' >>/etc/tcp.smtp
+echo '172:allow,RELAYCLIENT=""' >>/etc/tcp.smtp
+
+echo taras > /var/qmail/alias/.qmail-root
+echo taras > /var/qmail/alias/.qmail-postmaster
+ln -s .qmail-postmaster /var/qmail/alias/.qmail-mailer-daemon
+chmod 644 /var/qmail/alias/.qmail-root /var/qmail/alias/.qmail-postmaster
+
+svscanboot &
